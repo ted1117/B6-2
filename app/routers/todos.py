@@ -135,7 +135,7 @@ def update_todo(
     response_class=RedirectResponse,
 )
 def complete_todo(todo_id: int, service: TodoServiceDep) -> RedirectResponse:
-    completed: bool | None = service.complete_todo(todo_id)
+    completed: Todo | None = service.complete_todo(todo_id)
     if completed is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
