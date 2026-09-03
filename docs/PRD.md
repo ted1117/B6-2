@@ -10,7 +10,7 @@ FastAPI를 기반으로 단일 도메인을 관리하는 SSR 웹 애플리케이
 
 ## 기술 스택
 
-- Python 3.14
+- Python 3.12
 - FastAPI
 - SQLAlchemy
 - SQLite
