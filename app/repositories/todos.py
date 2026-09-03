@@ -30,8 +30,10 @@ class TodoRepository:
         return todo
 
     def complete(self, todo: Todo) -> bool:
-        todo.is_completed = True
-        todo.completed_at = datetime.now()
+        if not todo.is_completed:
+            todo.is_completed = True
+            todo.completed_at = datetime.now()
+
         self.session.add(todo)
         self.session.commit()
         self.session.refresh(todo)
