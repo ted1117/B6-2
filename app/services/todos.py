@@ -44,12 +44,18 @@ class TodoService:
 
         return self.repository.update(todo)
 
-    def complete_todo(self, todo_id: int) -> bool | None:
+    def complete_todo(self, todo_id: int) -> None | Todo:
         todo = self.repository.get_by_id(todo_id)
         if todo is None:
             return None
 
-        return self.repository.complete(todo)
+        if todo.is_completed:
+            return todo
+
+        todo.is_completed = True
+        todo.completed_at = datetime.now()
+
+        return self.repository.update(todo)
 
     def delete_todo(self, todo_id: int) -> bool:
         todo = self.repository.get_by_id(todo_id)

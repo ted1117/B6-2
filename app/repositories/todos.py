@@ -29,16 +29,6 @@ class TodoRepository:
         self.session.refresh(todo)
         return todo
 
-    def complete(self, todo: Todo) -> bool:
-        if not todo.is_completed:
-            todo.is_completed = True
-            todo.completed_at = datetime.now()
-
-        self.session.add(todo)
-        self.session.commit()
-        self.session.refresh(todo)
-        return todo.is_completed
-
     def delete(self, todo: Todo) -> None:
         self.session.delete(todo)
         self.session.commit()
