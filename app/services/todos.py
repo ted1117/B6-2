@@ -2,27 +2,36 @@ from datetime import datetime
 
 from app.models.todos import Todo
 from app.repositories.todos import TodoRepository
-from app.schemas.todos import TodoCreate, TodoUpdate
+from app.schemas.todos import TodoCreate, TodoResponse, TodoUpdate
 
 
 class TodoService:
     def __init__(self, repository: TodoRepository) -> None:
         self.repository = repository
 
-    def get_all_todos(self) -> list[Todo]:
-        return self.repository.get_all()
+    def get_all_todos(self) -> list[TodoResponse]:
+        return [TodoResponse.model_validate(todo) for todo in self.repository.get_all()]
 
-    def get_todo_by_id(self, todo_id: int) -> Todo | None:
-        return self.repository.get_by_id(todo_id)
+    def get_todo_by_id(self, todo_id: int) -> TodoResponse | None:
+        todo = self.repository.get_by_id(todo_id)
+        if todo is None:
+            return None
 
-    def create_todo(self, todo_create: TodoCreate) -> Todo:
+        return TodoResponse.model_validate(todo)
+
+    def create_todo(self, todo_create: TodoCreate) -> TodoResponse:
         todo = Todo(
             title=todo_create.title,
             description=todo_create.description,
         )
-        return self.repository.create(todo)
+        created_todo = self.repository.create(todo)
+        return TodoResponse.model_validate(created_todo)
 
-    def update_todo(self, todo_id: int, todo_update: TodoUpdate) -> Todo | None:
+    def update_todo(
+        self,
+        todo_id: int,
+        todo_update: TodoUpdate,
+    ) -> TodoResponse | None:
         todo = self.repository.get_by_id(todo_id)
         if todo is None:
             return None
@@ -42,20 +51,22 @@ class TodoService:
         elif not was_completed:
             todo.completed_at = datetime.now()
 
-        return self.repository.update(todo)
+        updated_todo = self.repository.update(todo)
+        return TodoResponse.model_validate(updated_todo)
 
-    def complete_todo(self, todo_id: int) -> None | Todo:
+    def complete_todo(self, todo_id: int) -> TodoResponse | None:
         todo = self.repository.get_by_id(todo_id)
         if todo is None:
             return None
 
         if todo.is_completed:
-            return todo
+            return TodoResponse.model_validate(todo)
 
         todo.is_completed = True
         todo.completed_at = datetime.now()
 
-        return self.repository.update(todo)
+        updated_todo = self.repository.update(todo)
+        return TodoResponse.model_validate(updated_todo)
 
     def delete_todo(self, todo_id: int) -> bool:
         todo = self.repository.get_by_id(todo_id)

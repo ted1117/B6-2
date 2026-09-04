@@ -6,9 +6,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from app.core.database import SessionDep
-from app.models.todos import Todo
 from app.repositories.todos import TodoRepository
-from app.schemas.todos import TodoCreate, TodoUpdate
+from app.schemas.todos import TodoCreate, TodoResponse, TodoUpdate
 from app.services.todos import TodoService
 
 router = APIRouter(tags=["Todos"])
@@ -38,7 +37,7 @@ def home(request: Request) -> Response:
 
 @router.get("/todos", response_class=HTMLResponse)
 def get_all_todos(request: Request, service: TodoServiceDep) -> Response:
-    todos: list[Todo] = service.get_all_todos()
+    todos: list[TodoResponse] = service.get_all_todos()
     return templates.TemplateResponse(
         request=request,
         name="todos/list.html",
@@ -63,7 +62,7 @@ def create_todo(
     todo_create: TodoCreateForm,
     service: TodoServiceDep,
 ) -> RedirectResponse:
-    todo: Todo = service.create_todo(todo_create)
+    todo: TodoResponse = service.create_todo(todo_create)
     return RedirectResponse(
         url=f"/todos/{todo.id}",
         status_code=status.HTTP_303_SEE_OTHER,
@@ -72,7 +71,7 @@ def create_todo(
 
 @router.get("/todos/{todo_id}", response_class=HTMLResponse)
 def get_todo(todo_id: int, request: Request, service: TodoServiceDep) -> Response:
-    todo: Todo | None = service.get_todo_by_id(todo_id)
+    todo: TodoResponse | None = service.get_todo_by_id(todo_id)
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -92,7 +91,7 @@ def update_todo_form(
     request: Request,
     service: TodoServiceDep,
 ) -> Response:
-    todo: Todo | None = service.get_todo_by_id(todo_id)
+    todo: TodoResponse | None = service.get_todo_by_id(todo_id)
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -116,7 +115,7 @@ def update_todo(
     todo_update: TodoUpdateForm,
     service: TodoServiceDep,
 ) -> RedirectResponse:
-    todo: Todo | None = service.update_todo(todo_id, todo_update)
+    todo: TodoResponse | None = service.update_todo(todo_id, todo_update)
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -135,7 +134,7 @@ def update_todo(
     response_class=RedirectResponse,
 )
 def complete_todo(todo_id: int, service: TodoServiceDep) -> RedirectResponse:
-    completed: Todo | None = service.complete_todo(todo_id)
+    completed: TodoResponse | None = service.complete_todo(todo_id)
     if completed is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

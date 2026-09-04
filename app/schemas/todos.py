@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TodoBase(BaseModel):
@@ -26,3 +28,15 @@ class TodoUpdate(TodoBase):
         default=False,
         description="Todo 완료 여부",
     )
+
+
+class TodoResponse(TodoBase):
+    """Todo 응답 스키마."""
+
+    id: int = Field(description="Todo ID")
+    is_completed: bool = Field(description="Todo 완료 여부")
+    completed_at: datetime | None = Field(description="Todo 완료 시간")
+    created_at: datetime = Field(description="Todo 생성 시간")
+    updated_at: datetime = Field(description="Todo 수정 시간")
+
+    model_config = ConfigDict(from_attributes=True)
