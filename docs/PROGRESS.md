@@ -34,6 +34,8 @@ Last updated: 2026-09-05 19:18 KST
 - [x] 존재하지 않는 수정 Form 조회에 404 안내 화면 연결
 - [x] 안내 문구와 목록 이동 링크 제공
 - [x] 상태 코드, Content-Type, 안내 문구, 목록 링크 통합 테스트 추가
+- [x] `feature/todo-crud` 커밋 및 원격 푸시
+- [x] `develop`에 fast-forward 머지 및 원격 푸시
 
 ## In Progress
 
@@ -41,9 +43,8 @@ Last updated: 2026-09-05 19:18 KST
 
 ## Next Steps
 
-1. 관련 테스트와 전체 검사 실행
-2. `feature/todo-crud` 커밋 및 푸시
-3. `develop`에 fast-forward 머지 및 푸시
+1. 변경 내용 검토
+2. 최종 제출 시 `develop`을 `main`에 반영
 
 ## Changed Files
 
