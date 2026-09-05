@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ todo.title }}{% endblock %}
+
+{% block content %}
+  <article class="panel">
+    <h1>{{ todo.title }}</h1>
+    {% if todo.is_completed %}
+      <span class="status completed">완료</span>
+    {% else %}
+      <span class="status">미완료</span>
+    {% endif %}
+
+    <h2>상세 내용</h2>
+    {% if todo.description %}
+      <p class="description">{{ todo.description }}</p>
+    {% else %}
+      <p class="empty">상세 내용이 없습니다.</p>
+    {% endif %}
+
+    <p><strong>생성 일시</strong>: <time datetime="{{ todo.created_at.isoformat() }}">{{ todo.created_at.strftime("%Y-%m-%d %H:%M") }}</time></p>
+
+    <div class="actions">
+      <a class="button" href="/todos/{{ todo.id }}/edit">수정</a>
+      <form method="post" action="/todos/{{ todo.id }}/delete">
+        <button class="danger" type="submit" aria-label="{{ todo.title }} 삭제">삭제</button>
+      </form>
+      <a class="button secondary" href="/todos">목록으로</a>
+    </div>
+  </article>
+{% endblock %}
