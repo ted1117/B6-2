@@ -15,7 +15,11 @@
         <textarea id="description" name="description">{{ todo.description or "" }}</textarea>
       </div>
       <div class="checkbox-group">
-        <input id="is_completed" name="is_completed" type="checkbox" value="true" {% if todo.is_completed %} checked{% endif %}="checked{% endif %}">
+        {% if todo.is_completed %}
+          <input id="is_completed" name="is_completed" type="checkbox" value="true" checked>
+        {% else %}
+          <input id="is_completed" name="is_completed" type="checkbox" value="true">
+        {% endif %}
         <label for="is_completed">완료</label>
       </div>
       <div class="actions">
