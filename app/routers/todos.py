@@ -1,13 +1,13 @@
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from app.core.database import SessionDep
 from app.repositories.todos import TodoRepository
-from app.schemas.todos import TodoCreate, TodoResponse, TodoUpdate
+from app.schemas.todos import TodoCreate, TodoResponse, TodoSearch, TodoUpdate
 from app.services.todos import TodoService
 
 router = APIRouter(tags=["Todos"])
@@ -24,6 +24,7 @@ def get_todo_service(session: SessionDep) -> TodoService:
 TodoServiceDep = Annotated[TodoService, Depends(get_todo_service)]
 TodoCreateForm = Annotated[TodoCreate, Form()]
 TodoUpdateForm = Annotated[TodoUpdate, Form()]
+TodoSearchQuery = Annotated[TodoSearch, Query()]
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -36,12 +37,20 @@ def home(request: Request) -> Response:
 
 
 @router.get("/todos", response_class=HTMLResponse)
-def get_all_todos(request: Request, service: TodoServiceDep) -> Response:
-    todos: list[TodoResponse] = service.get_all_todos()
+def get_all_todos(
+    request: Request, service: TodoServiceDep, search: TodoSearchQuery
+) -> Response:
+    todos: list[TodoResponse] = service.get_all_todos(
+        search_by=search.search_by, search_query=search.q
+    )
     return templates.TemplateResponse(
         request=request,
         name="todos/list.html",
-        context={"todos": todos},
+        context={
+            "todos": todos,
+            "search_by": search.search_by,
+            "search_query": search.q,
+        },
     )
 
 

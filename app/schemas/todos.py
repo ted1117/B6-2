@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TodoBase(BaseModel):
@@ -15,6 +15,35 @@ class TodoBase(BaseModel):
         description="Todo 상세 내용",
         examples=["우유와 달걀 구매"],
     )
+
+
+class TodoSearch(BaseModel):
+    """Todo 검색 요청 스키마."""
+
+    search_by: str = Field(
+        default="title",
+        description="검색 기준 필드 (title 또는 description)",
+        examples=["title", "description"],
+    )
+    q: str | None = Field(
+        default=None,
+        description="검색어",
+        examples=["장보기"],
+    )
+
+    @field_validator("search_by")
+    @classmethod
+    def validate_search_by(cls, value: str) -> str:
+        if value not in {"title", "description"}:
+            return "title"
+        return value
+
+    @field_validator("q")
+    @classmethod
+    def validate_q(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
 
 
 class TodoCreate(TodoBase):
