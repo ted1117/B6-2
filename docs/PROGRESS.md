@@ -1,6 +1,6 @@
 # Progress: To-do SSR UI 배치 개선
 
-Last updated: 2026-09-05 13:41 KST
+Last updated: 2026-09-05 18:19 KST
 
 ## Goal
 
@@ -8,11 +8,13 @@ Last updated: 2026-09-05 13:41 KST
 - UI의 `Todo` 표기를 `To-do`로 통일한다.
 - 완료와 삭제 확인을 JavaScript 없이 HTML과 기존 POST 엔드포인트로 처리한다.
 - 템플릿의 CSS를 `app/static/css/style.css`로 분리한다.
+- 완료된 To-do의 상세 화면에 완료 일시를 표시한다.
+- 존재하지 않는 To-do 조회에 사용할 404 안내 템플릿을 제공한다.
 
 ## Current Status
 
 - Status: Ready for review
-- Current focus: UI 배치 개선 및 CSS 정적 파일 분리와 검증 완료
+- Current focus: 완료 일시 표시와 404 안내 템플릿 구현 완료
 - Branch: `feature/todo-ui`
 - Related issue/PR: 없음
 
@@ -30,6 +32,9 @@ Last updated: 2026-09-05 13:41 KST
   사용하며, 목록과 상세에서 제목 오른쪽에 배치한다. 완료된 항목은 버튼을
   비활성화하고, 목록 제목은 회색 취소선으로 구분한다.
 - 상세의 제목/상태, 본문, 생성 일시, 하단 작업 영역을 분리한다.
+- `completed_at`이 존재하는 상세 화면에만 완료 일시를 표시한다.
+- 404 안내 화면은 공통 레이아웃을 사용하고 목록 이동 링크를 제공한다.
+- 404 상태 반환과 안내 템플릿 연결은 `feature/todo-crud`에서 Router가 담당한다.
 - 삭제 버튼은 HTML `dialog popover`와 `popovertarget`으로 확인창을 연다.
   취소 또는 Escape는 창만 닫고, 확인창 안의 삭제 버튼이 POST를 전송한다.
 - JavaScript, 인라인 이벤트 핸들러, 새 To-do 엔드포인트를 추가하지 않는다.
@@ -45,6 +50,8 @@ Last updated: 2026-09-05 13:41 KST
 - [x] 제목, 상세 내용, 완료 여부, 생성 일시와 수정/삭제/목록 기능을 제공하는
       To-do 상세 화면
 - [x] 상세 제목/본문/날짜 영역 분리와 완료 버튼 추가
+- [x] 완료된 상세 화면의 완료 일시 표시
+- [x] 존재하지 않는 데이터의 404 안내 템플릿과 목록 이동 링크
 - [x] JavaScript 없는 삭제 확인창 및 취소 동작
 - [x] 기존 값을 표시하고 `is_completed`를 변경할 수 있는 To-do 수정 Form
 - [x] 공통 레이아웃, 반응형 기본 스타일 및 기본 접근성 보완
@@ -61,8 +68,8 @@ Last updated: 2026-09-05 13:41 KST
 
 ## Next Steps
 
-1. 변경 내용 검토
-2. 사용자 확인 후 커밋
+1. `feature/todo-ui` 변경을 `develop`에 반영
+2. `feature/todo-crud`에서 조회 실패 Router 처리 연결
 
 ## Changed Files
 
@@ -72,16 +79,29 @@ Last updated: 2026-09-05 13:41 KST
 - `app/templates/home.html`: To-do 목록/생성 문구
 - `app/templates/todos/list.html`: 오른쪽 새 To-do/완료 버튼 및 완료 상태 구분
 - `app/templates/todos/new.html`: To-do 생성 문구
-- `app/templates/todos/detail.html`: 제목/본문/날짜 영역, 완료 Form, 삭제 확인창
+- `app/templates/todos/detail.html`: 제목/본문/생성·완료 일시, 완료 Form, 삭제 확인창
+- `app/templates/todos/not_found.html`: 조회 실패 안내와 목록 이동 링크
 - `app/templates/todos/edit.html`: To-do 수정 문구
 - `app/routers/todos.py`: 홈 이름 및 404 문구의 `To-do` 표기
-- `tests/test_todo_ui.py`: 한국어 UI, JavaScript 부재, 완료 버튼 상태와 삭제
-  확인창 Form, 정적 CSS 제공 검증 및 기존 CRUD/303/저장 결과 테스트
+- `tests/test_todo_ui.py`: 한국어 UI, JavaScript 부재, 완료 버튼과 완료 일시,
+  삭제 확인창 Form, 정적 CSS 제공 검증 및 기존 CRUD/303/저장 결과 테스트
 - `docs/PROGRESS.md`: 현재 UI 구현 상태와 검증 결과 기록
 
 ## Commands Run
 
 ```text
+UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run pytest tests/test_todo_ui.py::test_complete_prg_updates_todo_and_list -q
+1 passed, 2 warnings
+
+UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run ruff format .
+20 files left unchanged
+
+UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run ruff check .
+All checks passed
+
+UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run pytest -q
+2 failed, 9 passed, 2 warnings
+
 UV_CACHE_DIR=/private/tmp/b6-2-ui-uv-cache uv run pytest tests/test_todo_ui.py -q
 9 passed, 2 warnings
 
@@ -108,8 +128,8 @@ CSS 분리 전후 선언 내용 동일함을 확인
 
 ## Test Status
 
-- Last passing: 전체 테스트 11개 통과
-- Failing: 없음
+- Last passing: 완료 일시 관련 테스트 1개 통과
+- Failing: 전체 테스트 중 기존 `To-do` 공통 표시 검증 2개 실패, 나머지 9개 통과
 - Browser check (CSS 분리 전): JavaScript 비활성 상태에서 생성, 목록/상세 완료, 삭제 확인과
   취소/Escape/삭제, 데스크톱/모바일 배치 확인. 임시 DB로 검증했다.
 - CSS check: 분리 전후 선언 내용 동일, HTML CSS 링크 및 정적 파일 응답 검증 통과
@@ -119,6 +139,9 @@ CSS 분리 전후 선언 내용 동일함을 확인
 
 - 테스트 경고 2건은 FastAPI TestClient가 사용하는 Starlette/httpx 및 anyio의
   deprecated API에 대한 의존성 경고이며 현재 테스트 실패는 아니다.
+- 전체 테스트의 실패 2건은 공통 화면에서 `To-do` 문자열을 기대하는 기존
+  테스트와 현재 `홈`/`작업` 표기가 일치하지 않아 발생한다. 완료 일시 테스트는
+  통과한다.
 - 삭제 확인창은 HTML Popover 지원 브라우저를 전제로 한다. 배경 상호작용을
   차단하는 모달이 아니며, 바깥 클릭 또는 Escape로 닫을 수 있다.
 - PRD 반영 제안: 이번 사용자 지시의 세부 배치, 상세 완료 버튼, JavaScript

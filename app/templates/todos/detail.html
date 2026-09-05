@@ -38,6 +38,12 @@
       <dd>
         <time datetime="{{ todo.created_at.isoformat() }}">{{ todo.created_at.strftime("%Y-%m-%d %H:%M") }}</time>
       </dd>
+      {% if todo.completed_at %}
+        <dt>완료 일시</dt>
+        <dd>
+          <time datetime="{{ todo.completed_at.isoformat() }}">{{ todo.completed_at.strftime("%Y-%m-%d %H:%M") }}</time>
+        </dd>
+      {% endif %}
     </dl>
 
     <footer class="actions detail-actions">

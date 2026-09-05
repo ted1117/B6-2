@@ -326,6 +326,8 @@ def test_complete_prg_updates_todo_and_list(
         response = client.get(path)
 
         assert response.status_code == 200
+        if path == f"/todos/{todo_id}":
+            assert "완료 일시" not in response.text
         assert_form(response.text, action=f"/todos/{todo_id}/complete")
         page = parse_page(response.text)
         complete_buttons = [
@@ -360,6 +362,10 @@ def test_complete_prg_updates_todo_and_list(
 
         assert response.status_code == 200
         assert "완료할 To-do" in response.text
+        if path == f"/todos/{todo_id}":
+            assert "완료 일시" in response.text
+            assert stored.completed_at.isoformat() in response.text
+            assert stored.completed_at.strftime("%Y-%m-%d %H:%M") in response.text
         page = parse_page(response.text)
         assert not any(
             form.action == f"/todos/{todo_id}/complete" for form in page.forms
