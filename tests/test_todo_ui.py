@@ -162,7 +162,7 @@ def test_home_and_empty_todo_list_render_navigation(
     home_response = client.get("/")
 
     assert home_response.status_code == 200
-    assert "할 일" in home_response.text
+    assert "To-do" in home_response.text
     assert {"/todos", "/todos/new"} <= parse_page(home_response.text).links
 
     list_response = client.get("/todos")
@@ -187,8 +187,8 @@ def test_ui_pages_use_korean_labels_without_javascript(
         response = client.get(path)
 
         assert response.status_code == 200
-        assert "할 일" in response.text
-        assert "Todo" not in response.text
+        assert "To-do" in response.text
+        assert "할 일" not in response.text
         for tag, attributes in parse_page(response.text).elements:
             assert tag != "script"
             assert not any(name.startswith("on") for name in attributes)
@@ -318,7 +318,7 @@ def test_complete_prg_updates_todo_and_list(
     client, engine = ui
     todo_id = create_todo(
         client,
-        title="완료할 할 일",
+        title="완료할 To-do",
         description="완료 상태 변경 대상",
     )
 
@@ -359,7 +359,7 @@ def test_complete_prg_updates_todo_and_list(
         response = client.get(path)
 
         assert response.status_code == 200
-        assert "완료할 할 일" in response.text
+        assert "완료할 To-do" in response.text
         page = parse_page(response.text)
         assert not any(
             form.action == f"/todos/{todo_id}/complete" for form in page.forms
@@ -375,7 +375,7 @@ def test_delete_prg_removes_todo_from_storage_and_list(
     client, engine = ui
     todo_id = create_todo(
         client,
-        title="삭제할 할 일",
+        title="삭제할 To-do",
         description="삭제 대상",
     )
 
@@ -439,7 +439,7 @@ def test_delete_prg_removes_todo_from_storage_and_list(
     list_response = client.get("/todos")
 
     assert list_response.status_code == 200
-    assert "삭제할 할 일" not in list_response.text
+    assert "삭제할 To-do" not in list_response.text
     assert client.get(f"/todos/{todo_id}").status_code == 404
 
 

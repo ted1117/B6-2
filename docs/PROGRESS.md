@@ -1,11 +1,11 @@
-# Progress: 할 일 SSR UI 배치 개선
+# Progress: To-do SSR UI 배치 개선
 
-Last updated: 2026-09-05 13:30 KST
+Last updated: 2026-09-05 13:41 KST
 
 ## Goal
 
 - PRD-B6-2의 SSR 화면에서 기존 색상을 유지하며 목록과 상세 배치를 개선한다.
-- UI의 `Todo` 표기를 `할 일`로 통일한다.
+- UI의 `Todo` 표기를 `To-do`로 통일한다.
 - 완료와 삭제 확인을 JavaScript 없이 HTML과 기존 POST 엔드포인트로 처리한다.
 - 템플릿의 CSS를 `app/static/css/style.css`로 분리한다.
 
@@ -32,21 +32,21 @@ Last updated: 2026-09-05 13:30 KST
 - 상세의 제목/상태, 본문, 생성 일시, 하단 작업 영역을 분리한다.
 - 삭제 버튼은 HTML `dialog popover`와 `popovertarget`으로 확인창을 연다.
   취소 또는 Escape는 창만 닫고, 확인창 안의 삭제 버튼이 POST를 전송한다.
-- JavaScript, 인라인 이벤트 핸들러, 새 할 일 엔드포인트를 추가하지 않는다.
+- JavaScript, 인라인 이벤트 핸들러, 새 To-do 엔드포인트를 추가하지 않는다.
   라우터 변경은 홈 이름과 사용자에게 표시되는 404 문구의 한국어 표기뿐이다.
 
 ## Completed
 
-- [x] 애플리케이션 이름과 할 일 목록/생성 링크가 있는 Home 화면
-- [x] 카드 형태의 할 일 목록, 완료 상태, 상세 링크 및 완료 Form
-- [x] 목록 상단의 새 할 일 버튼과 각 카드의 완료 버튼 오른쪽 배치
+- [x] 애플리케이션 이름과 To-do 목록/생성 링크가 있는 Home 화면
+- [x] 카드 형태의 To-do 목록, 완료 상태, 상세 링크 및 완료 Form
+- [x] 목록 상단의 새 To-do 버튼과 각 카드의 완료 버튼 오른쪽 배치
 - [x] 기본 글자색의 제목 링크 및 완료된 제목의 회색 취소선
-- [x] `title`, `description` 필드를 제공하는 할 일 생성 Form
+- [x] `title`, `description` 필드를 제공하는 To-do 생성 Form
 - [x] 제목, 상세 내용, 완료 여부, 생성 일시와 수정/삭제/목록 기능을 제공하는
-      할 일 상세 화면
+      To-do 상세 화면
 - [x] 상세 제목/본문/날짜 영역 분리와 완료 버튼 추가
 - [x] JavaScript 없는 삭제 확인창 및 취소 동작
-- [x] 기존 값을 표시하고 `is_completed`를 변경할 수 있는 할 일 수정 Form
+- [x] 기존 값을 표시하고 `is_completed`를 변경할 수 있는 To-do 수정 Form
 - [x] 공통 레이아웃, 반응형 기본 스타일 및 기본 접근성 보완
 - [x] 임시 SQLite를 사용하는 SSR/Form/PRG 통합 테스트
 - [x] 임시 서버와 실제 브라우저를 이용한 생성, 수정, 목록 화면 확인
@@ -69,12 +69,12 @@ Last updated: 2026-09-05 13:30 KST
 - `app/templates/base.html`: 공통 레이아웃 및 외부 CSS 링크
 - `app/static/css/style.css`: 기존 목록/상세 배치, 완료 제목, 확인창과 반응형 스타일
 - `app/main.py`: `/static` 경로의 정적 파일 제공 설정
-- `app/templates/home.html`: 할 일 목록/생성 문구
-- `app/templates/todos/list.html`: 오른쪽 새 할 일/완료 버튼 및 완료 상태 구분
-- `app/templates/todos/new.html`: 할 일 생성 문구
+- `app/templates/home.html`: To-do 목록/생성 문구
+- `app/templates/todos/list.html`: 오른쪽 새 To-do/완료 버튼 및 완료 상태 구분
+- `app/templates/todos/new.html`: To-do 생성 문구
 - `app/templates/todos/detail.html`: 제목/본문/날짜 영역, 완료 Form, 삭제 확인창
-- `app/templates/todos/edit.html`: 할 일 수정 문구
-- `app/routers/todos.py`: 홈 이름 및 404 문구의 `할 일` 표기
+- `app/templates/todos/edit.html`: To-do 수정 문구
+- `app/routers/todos.py`: 홈 이름 및 404 문구의 `To-do` 표기
 - `tests/test_todo_ui.py`: 한국어 UI, JavaScript 부재, 완료 버튼 상태와 삭제
   확인창 Form, 정적 CSS 제공 검증 및 기존 CRUD/303/저장 결과 테스트
 - `docs/PROGRESS.md`: 현재 UI 구현 상태와 검증 결과 기록
@@ -102,7 +102,7 @@ CSS 분리 전후 선언 내용 동일함을 확인
 이전 UI 배치 검증: 임시 SQLite + Chromium 141.0.7390.37 (javaScriptEnabled: false)
 생성 Form / 목록 완료 303 / 상세 완료 303 / 완료 후 비활성 버튼 정상
 삭제 확인창 열기 / 취소 버튼 초기 포커스 / 취소 / Escape / 삭제 303 정상
-제목 링크 색상 / 완료 취소선 / 새 할 일 및 완료 버튼 오른쪽 배치 정상
+제목 링크 색상 / 완료 취소선 / 새 To-do 및 완료 버튼 오른쪽 배치 정상
 상세 제목·본문·날짜 영역 분리 / 375px·320px 긴 제목 줄바꿈 정상
 ```
 

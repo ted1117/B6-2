@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}할 일 목록{% endblock %}
+{% block title %}작업 목록{% endblock %}
 
 {% block content %}
   <div class="page-heading">
-    <h1>할 일 목록</h1>
-    <a class="button" href="/todos/new">새 할 일</a>
+    <h1>작업 목록</h1>
+    <a class="button" href="/todos/new">작업 추가</a>
   </div>
 
   {% if todos %}
@@ -13,7 +13,9 @@
       {% for todo in todos %}
         <li class="todo-card{% if todo.is_completed %} completed{% endif %}">
           <div>
-            <h2><a class="todo-title" href="/todos/{{ todo.id }}">{{ todo.title }}</a></h2>
+            <h2>
+              <a class="todo-title" href="/todos/{{ todo.id }}">{{ todo.title }}</a>
+            </h2>
             {% if todo.is_completed %}
               <span class="status completed">완료</span>
             {% else %}
@@ -21,7 +23,7 @@
             {% endif %}
           </div>
           {% if todo.is_completed %}
-            <button class="todo-completion" type="button" aria-label="{{ todo.title }} 완료됨" disabled>완료</button>
+            <button class="todo-completion" type="button" aria-label="{{ todo.title }} 완료됨" disabled="disabled">완료</button>
           {% else %}
             <form class="todo-completion" method="post" action="/todos/{{ todo.id }}/complete">
               <button type="submit" aria-label="{{ todo.title }} 완료하기">완료</button>
@@ -31,6 +33,6 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p class="empty">등록된 할 일이 없습니다.</p>
+    <p class="empty">등록된 작업이 없습니다.</p>
   {% endif %}
 {% endblock %}

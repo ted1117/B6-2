@@ -1,22 +1,29 @@
 <!doctype html>
 <html lang="ko">
+
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}할 일{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>
+      {% block title %}홈{% endblock %}
+    </title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}"/>
   </head>
+
   <body>
     <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
     <header class="site-header">
-      <a href="/"><strong>할 일</strong></a>
+      <a href="/">
+        <strong>홈</strong>
+      </a>
       <nav aria-label="주요 메뉴">
         <a href="/todos">목록</a>
-        <a href="/todos/new">새 할 일</a>
+        <a href="/todos/new">작업 추가</a>
       </nav>
     </header>
     <main id="main-content">
       {% block content %}{% endblock %}
     </main>
   </body>
+
 </html>

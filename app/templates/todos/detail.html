@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}{{ todo.title }}{% endblock %}
+{% block title %}{{ todo.title }}
+{% endblock %}
 
 {% block content %}
   <article class="panel detail-panel">
     <header class="detail-heading">
       <div>
-        <p class="detail-label">할 일 상세</p>
+        <p class="detail-label">작업 상세</p>
         <h1>{{ todo.title }}</h1>
         {% if todo.is_completed %}
           <span class="status completed">완료</span>
@@ -15,7 +16,7 @@
         {% endif %}
       </div>
       {% if todo.is_completed %}
-        <button class="todo-completion" type="button" aria-label="{{ todo.title }} 완료됨" disabled>완료</button>
+        <button class="todo-completion" type="button" aria-label="{{ todo.title }} 완료됨" disabled="disabled">완료</button>
       {% else %}
         <form class="todo-completion" method="post" action="/todos/{{ todo.id }}/complete">
           <button type="submit" aria-label="{{ todo.title }} 완료하기">완료</button>
@@ -34,7 +35,9 @@
 
     <dl class="detail-meta">
       <dt>생성 일시</dt>
-      <dd><time datetime="{{ todo.created_at.isoformat() }}">{{ todo.created_at.strftime("%Y-%m-%d %H:%M") }}</time></dd>
+      <dd>
+        <time datetime="{{ todo.created_at.isoformat() }}">{{ todo.created_at.strftime("%Y-%m-%d %H:%M") }}</time>
+      </dd>
     </dl>
 
     <footer class="actions detail-actions">
@@ -44,11 +47,11 @@
     </footer>
   </article>
 
-  <dialog class="confirmation" id="delete-confirmation" popover aria-labelledby="delete-heading" aria-describedby="delete-description">
+  <dialog class="confirmation" id="delete-confirmation" popover="popover" aria-labelledby="delete-heading" aria-describedby="delete-description">
     <h2 id="delete-heading">정말로 삭제하시겠습니까?</h2>
-    <p id="delete-description">“{{ todo.title }}” 할 일을 삭제합니다. 삭제한 할 일은 복구할 수 없습니다.</p>
+    <p id="delete-description">“{{ todo.title }}” 작업을 삭제합니다. 삭제한 작업은 복구할 수 없습니다.</p>
     <div class="actions">
-      <button class="secondary" type="button" popovertarget="delete-confirmation" popovertargetaction="hide" autofocus>취소</button>
+      <button class="secondary" type="button" popovertarget="delete-confirmation" popovertargetaction="hide" autofocus="autofocus">취소</button>
       <form method="post" action="/todos/{{ todo.id }}/delete">
         <button class="danger" type="submit" aria-label="{{ todo.title }} 삭제 확인">삭제</button>
       </form>
