@@ -1,66 +1,39 @@
-# Progress: To-do SSR UI 배치 개선
+# Progress: 존재하지 않는 To-do 조회 안내
 
-Last updated: 2026-09-05 18:19 KST
+Last updated: 2026-09-05 19:18 KST
 
 ## Goal
 
-- PRD-B6-2의 SSR 화면에서 기존 색상을 유지하며 목록과 상세 배치를 개선한다.
-- UI의 `Todo` 표기를 `To-do`로 통일한다.
-- 완료와 삭제 확인을 JavaScript 없이 HTML과 기존 POST 엔드포인트로 처리한다.
-- 템플릿의 CSS를 `app/static/css/style.css`로 분리한다.
-- 완료된 To-do의 상세 화면에 완료 일시를 표시한다.
-- 존재하지 않는 To-do 조회에 사용할 404 안내 템플릿을 제공한다.
+- 존재하지 않는 To-do의 상세 또는 수정 화면을 조회하면 안내 화면을 표시한다.
+- 조회 실패 응답은 `404 Not Found` 상태를 유지한다.
+- 안내 화면에서 To-do 목록으로 이동할 수 있게 한다.
 
 ## Current Status
 
-- Status: Ready for review
-- Current focus: 완료 일시 표시와 404 안내 템플릿 구현 완료
-- Branch: `feature/todo-ui`
-- Related issue/PR: 없음
+- Status: Implemented / verification complete
+- Current focus: 조회 실패 결과를 404 HTML 응답으로 변환
+- Branch: `feature/todo-crud`
+- Base: `develop` (`ae53676`)
 
 ## Decisions
 
-- 2026-09-05 기존 Router / Service / Repository 구현은 변경하지 않고,
-  라우터가 참조하는 Jinja2 템플릿을 추가한다.
-- 데이터 변경 기능은 모두 `method="post"` Form으로 연결하고 기존 303 PRG
-  동작을 유지한다.
-- 공통 레이아웃은 `base.html`에서 재사용한다. 사용자 후속 지시에 따라
-  CSS는 `app/static/css/style.css`로 옮기고 `url_for('static', ...)`로 연결한다.
-- `app/main.py`에서 `/static`을 마운트한다. 정적 파일 경로는 `__file__`을
-  기준으로 지정해 실행 디렉토리에 영향을 받지 않도록 한다.
-- 2026-09-05 사용자 후속 지시에 따라 목록 완료 기능은 체크박스 대신 버튼을
-  사용하며, 목록과 상세에서 제목 오른쪽에 배치한다. 완료된 항목은 버튼을
-  비활성화하고, 목록 제목은 회색 취소선으로 구분한다.
-- 상세의 제목/상태, 본문, 생성 일시, 하단 작업 영역을 분리한다.
-- `completed_at`이 존재하는 상세 화면에만 완료 일시를 표시한다.
-- 404 안내 화면은 공통 레이아웃을 사용하고 목록 이동 링크를 제공한다.
-- 404 상태 반환과 안내 템플릿 연결은 `feature/todo-crud`에서 Router가 담당한다.
-- 삭제 버튼은 HTML `dialog popover`와 `popovertarget`으로 확인창을 연다.
-  취소 또는 Escape는 창만 닫고, 확인창 안의 삭제 버튼이 POST를 전송한다.
-- JavaScript, 인라인 이벤트 핸들러, 새 To-do 엔드포인트를 추가하지 않는다.
-  라우터 변경은 홈 이름과 사용자에게 표시되는 404 문구의 한국어 표기뿐이다.
+- 템플릿 파일은 `feature/todo-ui`에서 먼저 구현하고 `develop`에 반영했다.
+- `feature/todo-crud`에서는 Router의 조회 실패 처리와 통합 테스트만 변경한다.
+- 템플릿 파일은 URL이 아니므로 Redirect하지 않는다.
+- `get_todo()`와 `update_todo_form()`이 `todos/not_found.html`을 직접 렌더링한다.
+- 브라우저 안내 화면을 제공하면서 HTTP 의미를 유지하도록 상태 코드는 404를
+  사용한다.
+- POST 수정, 완료, 삭제의 존재하지 않는 대상 처리는 기존 JSON 404 응답을
+  유지한다. 이번 범위는 GET 조회 화면이다.
 
 ## Completed
 
-- [x] 애플리케이션 이름과 To-do 목록/생성 링크가 있는 Home 화면
-- [x] 카드 형태의 To-do 목록, 완료 상태, 상세 링크 및 완료 Form
-- [x] 목록 상단의 새 To-do 버튼과 각 카드의 완료 버튼 오른쪽 배치
-- [x] 기본 글자색의 제목 링크 및 완료된 제목의 회색 취소선
-- [x] `title`, `description` 필드를 제공하는 To-do 생성 Form
-- [x] 제목, 상세 내용, 완료 여부, 생성 일시와 수정/삭제/목록 기능을 제공하는
-      To-do 상세 화면
-- [x] 상세 제목/본문/날짜 영역 분리와 완료 버튼 추가
-- [x] 완료된 상세 화면의 완료 일시 표시
-- [x] 존재하지 않는 데이터의 404 안내 템플릿과 목록 이동 링크
-- [x] JavaScript 없는 삭제 확인창 및 취소 동작
-- [x] 기존 값을 표시하고 `is_completed`를 변경할 수 있는 To-do 수정 Form
-- [x] 공통 레이아웃, 반응형 기본 스타일 및 기본 접근성 보완
-- [x] 임시 SQLite를 사용하는 SSR/Form/PRG 통합 테스트
-- [x] 임시 서버와 실제 브라우저를 이용한 생성, 수정, 목록 화면 확인
-- [x] JavaScript를 끈 Chromium에서 목록/상세 완료와 삭제 확인/취소/삭제 확인
-- [x] 데스크톱 및 375px/320px 화면에서 긴 제목의 줄바꿈과 버튼 배치 확인
-- [x] 기존 CSS 선언을 유지하며 외부 CSS 파일로 분리하고 공통 템플릿에 연결
-- [x] 다른 실행 디렉토리에서도 CSS 링크가 200 응답과 `text/css`를 반환하는지 검증
+- [x] `feature/todo-ui`에 404 안내 템플릿 추가
+- [x] 404 안내 템플릿을 `develop`에 fast-forward 머지 및 푸시
+- [x] 존재하지 않는 상세 조회에 404 안내 화면 연결
+- [x] 존재하지 않는 수정 Form 조회에 404 안내 화면 연결
+- [x] 안내 문구와 목록 이동 링크 제공
+- [x] 상태 코드, Content-Type, 안내 문구, 목록 링크 통합 테스트 추가
 
 ## In Progress
 
@@ -68,81 +41,45 @@ Last updated: 2026-09-05 18:19 KST
 
 ## Next Steps
 
-1. `feature/todo-ui` 변경을 `develop`에 반영
-2. `feature/todo-crud`에서 조회 실패 Router 처리 연결
+1. 관련 테스트와 전체 검사 실행
+2. `feature/todo-crud` 커밋 및 푸시
+3. `develop`에 fast-forward 머지 및 푸시
 
 ## Changed Files
 
-- `app/templates/base.html`: 공통 레이아웃 및 외부 CSS 링크
-- `app/static/css/style.css`: 기존 목록/상세 배치, 완료 제목, 확인창과 반응형 스타일
-- `app/main.py`: `/static` 경로의 정적 파일 제공 설정
-- `app/templates/home.html`: To-do 목록/생성 문구
-- `app/templates/todos/list.html`: 오른쪽 새 To-do/완료 버튼 및 완료 상태 구분
-- `app/templates/todos/new.html`: To-do 생성 문구
-- `app/templates/todos/detail.html`: 제목/본문/생성·완료 일시, 완료 Form, 삭제 확인창
-- `app/templates/todos/not_found.html`: 조회 실패 안내와 목록 이동 링크
-- `app/templates/todos/edit.html`: To-do 수정 문구
-- `app/routers/todos.py`: 홈 이름 및 404 문구의 `To-do` 표기
-- `tests/test_todo_ui.py`: 한국어 UI, JavaScript 부재, 완료 버튼과 완료 일시,
-  삭제 확인창 Form, 정적 CSS 제공 검증 및 기존 CRUD/303/저장 결과 테스트
-- `docs/PROGRESS.md`: 현재 UI 구현 상태와 검증 결과 기록
+- `app/routers/todos.py`: 조회 실패 시 404 안내 템플릿 반환
+- `tests/test_todo_ui.py`: 404 HTML 응답과 안내 화면 검증
+- `docs/PROGRESS.md`: 현재 브랜치의 구현 및 검증 상태 기록
+
+## Test Status
+
+- Related tests: `2 passed`, 경고 2건
+- Ruff format: Python 파일 24개 변경 없음
+- Ruff check: 통과
+- Full test suite: `2 failed, 9 passed`, 경고 2건
+- Diff check: 통과
 
 ## Commands Run
 
 ```text
-UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run pytest tests/test_todo_ui.py::test_complete_prg_updates_todo_and_list -q
-1 passed, 2 warnings
+UV_CACHE_DIR=/private/tmp/b6-2-not-found-uv-cache uv run pytest tests/test_todo_ui.py::test_missing_todo_pages_return_not_found -q
+2 passed, 2 warnings
 
-UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run ruff format .
-20 files left unchanged
+UV_CACHE_DIR=/private/tmp/b6-2-not-found-uv-cache uv run ruff format .
+3 Markdown code examples reformatted; 범위 밖 변경은 원복, Python 파일 변경 없음
 
-UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run ruff check .
+UV_CACHE_DIR=/private/tmp/b6-2-not-found-uv-cache uv run ruff check .
 All checks passed
 
-UV_CACHE_DIR=/private/tmp/b6-2-completed-at-uv-cache uv run pytest -q
+UV_CACHE_DIR=/private/tmp/b6-2-not-found-uv-cache uv run pytest -q
 2 failed, 9 passed, 2 warnings
-
-UV_CACHE_DIR=/private/tmp/b6-2-ui-uv-cache uv run pytest tests/test_todo_ui.py -q
-9 passed, 2 warnings
-
-UV_CACHE_DIR=/private/tmp/b6-2-ui-uv-cache uv run ruff format .
-20 files left unchanged
-
-UV_CACHE_DIR=/private/tmp/b6-2-ui-uv-cache uv run ruff check .
-All checks passed
-
-UV_CACHE_DIR=/private/tmp/b6-2-ui-uv-cache uv run pytest
-11 passed, 2 warnings
 
 git diff --check
 passed
-
-CSS 분리 전후 선언 내용 동일함을 확인
-
-이전 UI 배치 검증: 임시 SQLite + Chromium 141.0.7390.37 (javaScriptEnabled: false)
-생성 Form / 목록 완료 303 / 상세 완료 303 / 완료 후 비활성 버튼 정상
-삭제 확인창 열기 / 취소 버튼 초기 포커스 / 취소 / Escape / 삭제 303 정상
-제목 링크 색상 / 완료 취소선 / 새 To-do 및 완료 버튼 오른쪽 배치 정상
-상세 제목·본문·날짜 영역 분리 / 375px·320px 긴 제목 줄바꿈 정상
 ```
-
-## Test Status
-
-- Last passing: 완료 일시 관련 테스트 1개 통과
-- Failing: 전체 테스트 중 기존 `To-do` 공통 표시 검증 2개 실패, 나머지 9개 통과
-- Browser check (CSS 분리 전): JavaScript 비활성 상태에서 생성, 목록/상세 완료, 삭제 확인과
-  취소/Escape/삭제, 데스크톱/모바일 배치 확인. 임시 DB로 검증했다.
-- CSS check: 분리 전후 선언 내용 동일, HTML CSS 링크 및 정적 파일 응답 검증 통과
-- Not run: CSS 분리 후 브라우저 재확인, 다른 브라우저의 수동 확인
 
 ## Risks / Open Questions
 
-- 테스트 경고 2건은 FastAPI TestClient가 사용하는 Starlette/httpx 및 anyio의
-  deprecated API에 대한 의존성 경고이며 현재 테스트 실패는 아니다.
 - 전체 테스트의 실패 2건은 공통 화면에서 `To-do` 문자열을 기대하는 기존
-  테스트와 현재 `홈`/`작업` 표기가 일치하지 않아 발생한다. 완료 일시 테스트는
-  통과한다.
-- 삭제 확인창은 HTML Popover 지원 브라우저를 전제로 한다. 배경 상호작용을
-  차단하는 모달이 아니며, 바깥 클릭 또는 Escape로 닫을 수 있다.
-- PRD 반영 제안: 이번 사용자 지시의 세부 배치, 상세 완료 버튼, JavaScript
-  없는 삭제 확인창을 화면 명세에 추가한다. `docs/PRD.md`는 수정하지 않았다.
+  테스트와 현재 `홈`/`작업` 표기가 일치하지 않아 발생한다. 404 안내 화면 관련
+  테스트 2건은 통과한다.

@@ -73,9 +73,10 @@ def create_todo(
 def get_todo(todo_id: int, request: Request, service: TodoServiceDep) -> Response:
     todo: TodoResponse | None = service.get_todo_by_id(todo_id)
     if todo is None:
-        raise HTTPException(
+        return templates.TemplateResponse(
+            request=request,
+            name="todos/not_found.html",
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="To-do를 찾을 수 없습니다.",
         )
 
     return templates.TemplateResponse(
@@ -93,9 +94,10 @@ def update_todo_form(
 ) -> Response:
     todo: TodoResponse | None = service.get_todo_by_id(todo_id)
     if todo is None:
-        raise HTTPException(
+        return templates.TemplateResponse(
+            request=request,
+            name="todos/not_found.html",
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="To-do를 찾을 수 없습니다.",
         )
 
     return templates.TemplateResponse(

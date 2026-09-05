@@ -459,3 +459,6 @@ def test_missing_todo_pages_return_not_found(
     response = client.get(path)
 
     assert response.status_code == 404
+    assert response.headers["content-type"].startswith("text/html")
+    assert "해당 데이터를 찾을 수 없습니다." in response.text
+    assert "/todos" in parse_page(response.text).links
