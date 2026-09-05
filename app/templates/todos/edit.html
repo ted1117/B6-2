@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Todo 수정{% endblock %}
+{% block title %}할 일 수정{% endblock %}
 
 {% block content %}
   <section class="panel">
-    <h1>Todo 수정</h1>
+    <h1>할 일 수정</h1>
     <form method="post" action="/todos/{{ todo.id }}/edit">
       <div class="form-group">
         <label for="title">제목</label>

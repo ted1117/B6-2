@@ -1,28 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}Todo 목록{% endblock %}
+{% block title %}할 일 목록{% endblock %}
 
 {% block content %}
-  <h1>Todo 목록</h1>
-  <p><a class="button" href="/todos/new">새 Todo</a></p>
+  <div class="page-heading">
+    <h1>할 일 목록</h1>
+    <a class="button" href="/todos/new">새 할 일</a>
+  </div>
 
   {% if todos %}
     <ul class="todo-list">
       {% for todo in todos %}
-        <li class="todo-card">
-          <h2><a href="/todos/{{ todo.id }}">{{ todo.title }}</a></h2>
+        <li class="todo-card{% if todo.is_completed %} completed{% endif %}">
+          <div>
+            <h2><a class="todo-title" href="/todos/{{ todo.id }}">{{ todo.title }}</a></h2>
+            {% if todo.is_completed %}
+              <span class="status completed">완료</span>
+            {% else %}
+              <span class="status">미완료</span>
+            {% endif %}
+          </div>
           {% if todo.is_completed %}
-            <span class="status completed">완료</span>
+            <button class="todo-completion" type="button" aria-label="{{ todo.title }} 완료됨" disabled>완료</button>
           {% else %}
-            <span class="status">미완료</span>
-            <form method="post" action="/todos/{{ todo.id }}/complete">
-              <button type="submit" aria-label="{{ todo.title }} 완료하기">완료하기</button>
+            <form class="todo-completion" method="post" action="/todos/{{ todo.id }}/complete">
+              <button type="submit" aria-label="{{ todo.title }} 완료하기">완료</button>
             </form>
           {% endif %}
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <p class="empty">등록된 Todo가 없습니다.</p>
+    <p class="empty">등록된 할 일이 없습니다.</p>
   {% endif %}
 {% endblock %}

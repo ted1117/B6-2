@@ -3,29 +3,55 @@
 {% block title %}{{ todo.title }}{% endblock %}
 
 {% block content %}
-  <article class="panel">
-    <h1>{{ todo.title }}</h1>
-    {% if todo.is_completed %}
-      <span class="status completed">완료</span>
-    {% else %}
-      <span class="status">미완료</span>
-    {% endif %}
+  <article class="panel detail-panel">
+    <header class="detail-heading">
+      <div>
+        <p class="detail-label">할 일 상세</p>
+        <h1>{{ todo.title }}</h1>
+        {% if todo.is_completed %}
+          <span class="status completed">완료</span>
+        {% else %}
+          <span class="status">미완료</span>
+        {% endif %}
+      </div>
+      {% if todo.is_completed %}
+        <button class="todo-completion" type="button" aria-label="{{ todo.title }} 완료됨" disabled>완료</button>
+      {% else %}
+        <form class="todo-completion" method="post" action="/todos/{{ todo.id }}/complete">
+          <button type="submit" aria-label="{{ todo.title }} 완료하기">완료</button>
+        </form>
+      {% endif %}
+    </header>
 
-    <h2>상세 내용</h2>
-    {% if todo.description %}
-      <p class="description">{{ todo.description }}</p>
-    {% else %}
-      <p class="empty">상세 내용이 없습니다.</p>
-    {% endif %}
+    <section class="detail-content" aria-labelledby="description-heading">
+      <h2 id="description-heading">상세 내용</h2>
+      {% if todo.description %}
+        <p class="description">{{ todo.description }}</p>
+      {% else %}
+        <p class="empty">상세 내용이 없습니다.</p>
+      {% endif %}
+    </section>
 
-    <p><strong>생성 일시</strong>: <time datetime="{{ todo.created_at.isoformat() }}">{{ todo.created_at.strftime("%Y-%m-%d %H:%M") }}</time></p>
+    <dl class="detail-meta">
+      <dt>생성 일시</dt>
+      <dd><time datetime="{{ todo.created_at.isoformat() }}">{{ todo.created_at.strftime("%Y-%m-%d %H:%M") }}</time></dd>
+    </dl>
 
-    <div class="actions">
+    <footer class="actions detail-actions">
       <a class="button" href="/todos/{{ todo.id }}/edit">수정</a>
-      <form method="post" action="/todos/{{ todo.id }}/delete">
-        <button class="danger" type="submit" aria-label="{{ todo.title }} 삭제">삭제</button>
-      </form>
       <a class="button secondary" href="/todos">목록으로</a>
-    </div>
+      <button class="danger" type="button" popovertarget="delete-confirmation" popovertargetaction="show">삭제</button>
+    </footer>
   </article>
+
+  <dialog class="confirmation" id="delete-confirmation" popover aria-labelledby="delete-heading" aria-describedby="delete-description">
+    <h2 id="delete-heading">정말로 삭제하시겠습니까?</h2>
+    <p id="delete-description">“{{ todo.title }}” 할 일을 삭제합니다. 삭제한 할 일은 복구할 수 없습니다.</p>
+    <div class="actions">
+      <button class="secondary" type="button" popovertarget="delete-confirmation" popovertargetaction="hide" autofocus>취소</button>
+      <form method="post" action="/todos/{{ todo.id }}/delete">
+        <button class="danger" type="submit" aria-label="{{ todo.title }} 삭제 확인">삭제</button>
+      </form>
+    </div>
+  </dialog>
 {% endblock %}

@@ -19,14 +19,27 @@ class ParsedForm:
     action: str
     method: str
     fields: set[str] = field(default_factory=set)
+    dialog_id: str | None = None
+
+
+@dataclass
+class ParsedButton:
+    attributes: dict[str, str | None]
+    form_action: str | None
+    dialog_id: str | None
+    text: str = ""
 
 
 class PageParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.forms: list[ParsedForm] = []
+        self.buttons: list[ParsedButton] = []
         self.links: set[str] = set()
+        self.elements: list[tuple[str, dict[str, str | None]]] = []
         self.current_form: ParsedForm | None = None
+        self.current_button: ParsedButton | None = None
+        self.current_dialog_id: str | None = None
 
     def handle_starttag(
         self,
@@ -34,6 +47,17 @@ class PageParser(HTMLParser):
         attrs: list[tuple[str, str | None]],
     ) -> None:
         attributes = dict(attrs)
+        self.elements.append((tag, attributes))
+
+        if tag == "dialog":
+            self.current_dialog_id = attributes.get("id")
+
+        if tag == "button":
+            self.current_button = ParsedButton(
+                attributes=attributes,
+                form_action=self.current_form.action if self.current_form else None,
+                dialog_id=self.current_dialog_id,
+            )
 
         if tag == "a" and attributes.get("href"):
             self.links.add(attributes["href"])
@@ -42,6 +66,7 @@ class PageParser(HTMLParser):
             self.current_form = ParsedForm(
                 action=attributes.get("action") or "",
                 method=(attributes.get("method") or "get").lower(),
+                dialog_id=self.current_dialog_id,
             )
         elif self.current_form is not None and tag in {"input", "select", "textarea"}:
             name = attributes.get("name")
@@ -52,6 +77,16 @@ class PageParser(HTMLParser):
         if tag == "form" and self.current_form is not None:
             self.forms.append(self.current_form)
             self.current_form = None
+        elif tag == "button" and self.current_button is not None:
+            self.current_button.text = self.current_button.text.strip()
+            self.buttons.append(self.current_button)
+            self.current_button = None
+        elif tag == "dialog":
+            self.current_dialog_id = None
+
+    def handle_data(self, data: str) -> None:
+        if self.current_button is not None:
+            self.current_button.text += data
 
 
 @pytest.fixture
@@ -127,13 +162,65 @@ def test_home_and_empty_todo_list_render_navigation(
     home_response = client.get("/")
 
     assert home_response.status_code == 200
-    assert "Todo" in home_response.text
+    assert "할 일" in home_response.text
     assert {"/todos", "/todos/new"} <= parse_page(home_response.text).links
 
     list_response = client.get("/todos")
 
     assert list_response.status_code == 200
     assert "/todos/new" in parse_page(list_response.text).links
+
+
+def test_ui_pages_use_korean_labels_without_javascript(
+    ui: tuple[TestClient, Engine],
+) -> None:
+    client, _ = ui
+    todo_id = create_todo(client, title="화면 확인", description="화면에 표시할 내용")
+
+    for path in (
+        "/",
+        "/todos",
+        "/todos/new",
+        f"/todos/{todo_id}",
+        f"/todos/{todo_id}/edit",
+    ):
+        response = client.get(path)
+
+        assert response.status_code == 200
+        assert "할 일" in response.text
+        assert "Todo" not in response.text
+        for tag, attributes in parse_page(response.text).elements:
+            assert tag != "script"
+            assert not any(name.startswith("on") for name in attributes)
+            assert not any(
+                (value or "").strip().lower().startswith("javascript:")
+                for value in attributes.values()
+            )
+
+
+def test_stylesheet_link_serves_css_from_another_working_directory(
+    ui: tuple[TestClient, Engine],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    client, _ = ui
+    monkeypatch.chdir(tmp_path)
+
+    response = client.get("/")
+    assert response.status_code == 200
+    elements = parse_page(response.text).elements
+    stylesheets = [
+        attributes["href"]
+        for tag, attributes in elements
+        if tag == "link" and attributes.get("rel") == "stylesheet"
+    ]
+    assert len(stylesheets) == 1
+    assert not any(tag == "style" for tag, _ in elements)
+
+    css_response = client.get(stylesheets[0])
+    assert css_response.status_code == 200
+    assert css_response.headers["content-type"].startswith("text/css")
+    assert css_response.text.strip()
 
 
 def test_create_form_and_create_prg_render_todo_detail(
@@ -231,9 +318,29 @@ def test_complete_prg_updates_todo_and_list(
     client, engine = ui
     todo_id = create_todo(
         client,
-        title="완료할 Todo",
+        title="완료할 할 일",
         description="완료 상태 변경 대상",
     )
+
+    for path in ("/todos", f"/todos/{todo_id}"):
+        response = client.get(path)
+
+        assert response.status_code == 200
+        assert_form(response.text, action=f"/todos/{todo_id}/complete")
+        page = parse_page(response.text)
+        complete_buttons = [
+            button
+            for button in page.buttons
+            if button.form_action == f"/todos/{todo_id}/complete"
+        ]
+        assert len(complete_buttons) == 1
+        assert complete_buttons[0].text == "완료"
+        assert complete_buttons[0].attributes.get("type") == "submit"
+        assert "disabled" not in complete_buttons[0].attributes
+        assert not any(
+            tag == "input" and attributes.get("type") == "checkbox"
+            for tag, attributes in page.elements
+        )
 
     complete_response = client.post(
         f"/todos/{todo_id}/complete",
@@ -248,11 +355,18 @@ def test_complete_prg_updates_todo_and_list(
     assert stored.is_completed is True
     assert stored.completed_at is not None
 
-    list_response = client.get("/todos")
+    for path in ("/todos", f"/todos/{todo_id}"):
+        response = client.get(path)
 
-    assert list_response.status_code == 200
-    assert "완료할 Todo" in list_response.text
-    assert "완료" in list_response.text
+        assert response.status_code == 200
+        assert "완료할 할 일" in response.text
+        page = parse_page(response.text)
+        assert not any(
+            form.action == f"/todos/{todo_id}/complete" for form in page.forms
+        )
+        complete_buttons = [button for button in page.buttons if button.text == "완료"]
+        assert len(complete_buttons) == 1
+        assert "disabled" in complete_buttons[0].attributes
 
 
 def test_delete_prg_removes_todo_from_storage_and_list(
@@ -261,9 +375,57 @@ def test_delete_prg_removes_todo_from_storage_and_list(
     client, engine = ui
     todo_id = create_todo(
         client,
-        title="삭제할 Todo",
+        title="삭제할 할 일",
         description="삭제 대상",
     )
+
+    detail_response = client.get(f"/todos/{todo_id}")
+
+    assert detail_response.status_code == 200
+    page = parse_page(detail_response.text)
+    dialogs = [
+        attributes
+        for tag, attributes in page.elements
+        if tag == "dialog" and attributes.get("id") == "delete-confirmation"
+    ]
+    assert len(dialogs) == 1
+    assert "popover" in dialogs[0]
+    confirmation_buttons = [
+        button
+        for button in page.buttons
+        if button.attributes.get("popovertarget") == "delete-confirmation"
+    ]
+    open_buttons = [
+        button
+        for button in confirmation_buttons
+        if button.attributes.get("popovertargetaction") == "show"
+    ]
+    assert len(open_buttons) == 1
+    assert open_buttons[0].attributes.get("type") == "button"
+    assert open_buttons[0].form_action is None
+    cancel_buttons = [
+        button
+        for button in confirmation_buttons
+        if button.attributes.get("popovertargetaction") == "hide"
+    ]
+    assert len(cancel_buttons) == 1
+    assert cancel_buttons[0].attributes.get("type") == "button"
+    assert cancel_buttons[0].dialog_id == "delete-confirmation"
+    delete_forms = [
+        form for form in page.forms if form.action == f"/todos/{todo_id}/delete"
+    ]
+    assert len(delete_forms) == 1
+    assert delete_forms[0].method == "post"
+    assert delete_forms[0].dialog_id == "delete-confirmation"
+    delete_buttons = [
+        button
+        for button in page.buttons
+        if button.form_action == f"/todos/{todo_id}/delete"
+        and button.attributes.get("type") == "submit"
+    ]
+    assert len(delete_buttons) == 1
+    assert delete_buttons[0].dialog_id == "delete-confirmation"
+    assert get_stored_todo(engine, todo_id) is not None
 
     delete_response = client.post(
         f"/todos/{todo_id}/delete",
@@ -277,7 +439,7 @@ def test_delete_prg_removes_todo_from_storage_and_list(
     list_response = client.get("/todos")
 
     assert list_response.status_code == 200
-    assert "삭제할 Todo" not in list_response.text
+    assert "삭제할 할 일" not in list_response.text
     assert client.get(f"/todos/{todo_id}").status_code == 404
 
 
