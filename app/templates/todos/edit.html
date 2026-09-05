@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}작업 수정{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>작업 수정</h1>
+    <form method="post" action="/todos/{{ todo.id }}/edit">
+      <div class="form-group">
+        <label for="title">제목</label>
+        <input id="title" name="title" type="text" value="{{ todo.title }}" maxlength="100" required="required" autofocus="autofocus">
+      </div>
+      <div class="form-group">
+        <label for="description">상세 내용</label>
+        <textarea id="description" name="description">{{ todo.description or "" }}</textarea>
+      </div>
+      <div class="checkbox-group">
+        {% if todo.is_completed %}
+          <input id="is_completed" name="is_completed" type="checkbox" value="true" checked>
+        {% else %}
+          <input id="is_completed" name="is_completed" type="checkbox" value="true">
+        {% endif %}
+        <label for="is_completed">완료</label>
+      </div>
+      <div class="actions">
+        <button type="submit">저장</button>
+        <a class="button secondary" href="/todos/{{ todo.id }}">취소</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

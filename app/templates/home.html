@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_name }}
+{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>{{ app_name }}</h1>
+    <p>작업을 추가하고 완료 여부를 관리하세요.</p>
+    <div class="actions">
+      <a class="button" href="/todos">작업 목록</a>
+      <a class="button secondary" href="/todos/new">작업 추가</a>
+    </div>
+  </section>
+{% endblock %}

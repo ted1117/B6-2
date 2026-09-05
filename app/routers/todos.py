@@ -31,7 +31,7 @@ def home(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={"app_name": "Todo"},
+        context={"app_name": "홈"},
     )
 
 
@@ -75,7 +75,7 @@ def get_todo(todo_id: int, request: Request, service: TodoServiceDep) -> Respons
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Todo를 찾을 수 없습니다.",
+            detail="To-do를 찾을 수 없습니다.",
         )
 
     return templates.TemplateResponse(
@@ -95,7 +95,7 @@ def update_todo_form(
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Todo를 찾을 수 없습니다.",
+            detail="To-do를 찾을 수 없습니다.",
         )
 
     return templates.TemplateResponse(
@@ -119,7 +119,7 @@ def update_todo(
     if todo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Todo를 찾을 수 없습니다.",
+            detail="To-do를 찾을 수 없습니다.",
         )
 
     return RedirectResponse(
@@ -138,7 +138,7 @@ def complete_todo(todo_id: int, service: TodoServiceDep) -> RedirectResponse:
     if completed is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Todo를 찾을 수 없습니다.",
+            detail="To-do를 찾을 수 없습니다.",
         )
 
     return RedirectResponse(
@@ -157,7 +157,7 @@ def delete_todo(todo_id: int, service: TodoServiceDep) -> RedirectResponse:
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Todo를 찾을 수 없습니다.",
+            detail="To-do를 찾을 수 없습니다.",
         )
 
     return RedirectResponse(
