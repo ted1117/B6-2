@@ -9,8 +9,15 @@ class TodoService:
     def __init__(self, repository: TodoRepository) -> None:
         self.repository = repository
 
-    def get_all_todos(self) -> list[TodoResponse]:
-        return [TodoResponse.model_validate(todo) for todo in self.repository.get_all()]
+    def get_all_todos(
+        self, search_by: str = "title", search_query: str | None = None
+    ) -> list[TodoResponse]:
+        return [
+            TodoResponse.model_validate(todo)
+            for todo in self.repository.get_all(
+                search_by=search_by, search_query=search_query
+            )
+        ]
 
     def get_todo_by_id(self, todo_id: int) -> TodoResponse | None:
         todo = self.repository.get_by_id(todo_id)
